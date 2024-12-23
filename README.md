@@ -8,3 +8,9 @@ This is an algorithm template library for OI (Olympiad in Informatics) competiti
 ## Usage
 
 Copy the template from the corresponding source file and use it directly.
+
+## Contribution
+
+1. Fork this repository
+2. Make some changes
+3. Submit a Pull Request
