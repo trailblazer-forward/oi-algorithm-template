@@ -50,7 +50,7 @@ public:
     T query(size_t left, size_t right)
     {
         int j = m_log[right - left + 1];
-        return m_func(m_table[left][j], m_table[right - (1 << j) + 1][j]);
+        return m_func(m_table[left][j], m_table[right - (1LL << j) + 1][j]);
     }
 private:
     const F m_func;
