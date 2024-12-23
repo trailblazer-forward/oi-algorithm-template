@@ -75,12 +75,12 @@ private:
 public:
     DSU(size_t n) : base_type(n), m_ranks(n, 1) {}
 
-    size_t union_by_rank(size_t a, size_t b) noexcept
+    size_t union_sets(size_t a, size_t b) noexcept
     {
         return union_impl(a, b, false);
     }
 
-    size_t union_with_path_compression_by_rank(size_t a, size_t b) noexcept
+    size_t union_with_path_compression(size_t a, size_t b) noexcept
     {
         return union_impl(a, b, true);
     }
