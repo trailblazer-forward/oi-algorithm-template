@@ -34,15 +34,15 @@ public:
         size_t n = data.size();
         init_log_table(n);
 
-        int max_log = static_cast<int>(log2(n) + 1);
-        m_table.assign(n, vector<int>(max_log));
+        int max_log = static_cast<int>(ceil(log2(n)) + 1);
+        m_table.assign(n, vector<T>(max_log));
         for (int i = 0; i < n; ++i) {
             m_table[i][0] = data[i];
         }
 
         for (int j = 1; j < max_log; ++j) {
             for (int i = 0; i + (1 << j) <= n; ++i) {
-                m_table[i][j] = min(m_table[i][j - 1], m_table[i + (1 << (j - 1))][j - 1]);
+                m_table[i][j] = m_func(m_table[i][j - 1], m_table[i + (1 << (j - 1))][j - 1]);
             }
         }
     }
@@ -50,7 +50,7 @@ public:
     T query(size_t left, size_t right)
     {
         int j = m_log[right - left + 1];
-        return min(m_table[left][j], m_table[right - (1LL << j) + 1][j]);
+        return m_func(m_table[left][j], m_table[right - (1 << j) + 1][j]);
     }
 private:
     const F m_func;
@@ -68,6 +68,8 @@ int main()
 
     std::cout << "Minimum value in range [0, 5]: " << st.query(0, 5) << std::endl;
     std::cout << "Minimum value in range [3, 8]: " << st.query(3, 8) << std::endl;
+    std::cout << "Minimum value in range [1, 4]: " << st.query(1, 4) << std::endl; // 添加更多测试用例
+    std::cout << "Minimum value in range [2, 6]: " << st.query(2, 6) << std::endl;
 
     return 0;
 }
