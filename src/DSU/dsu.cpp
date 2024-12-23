@@ -7,6 +7,14 @@ using namespace std;
 template <bool UnionByRank = false, bool RecordSize = false>
 class DSU
 {
+private:
+    size_t union_impl(size_t a, size_t b, bool use_path_compression) noexcept
+    {
+        size_t root_a = use_path_compression ? find_with_path_compression(a) : find(a);
+        size_t root_b = use_path_compression ? find_with_path_compression(b) : find(b);
+        m_fathers[root_a] = root_b;
+        return root_b;
+    }
 public:
     DSU(size_t n) : m_fathers(n)
     {
@@ -34,14 +42,6 @@ public:
     }
 protected:
     vector<size_t> m_fathers;
-private:
-    size_t union_impl(size_t a, size_t b, bool use_path_compression) noexcept
-    {
-        size_t root_a = use_path_compression ? find_with_path_compression(a) : find(a);
-        size_t root_b = use_path_compression ? find_with_path_compression(b) : find(b);
-        m_fathers[root_a] = root_b;
-        return root_b;
-    }
 };
 
 // Specialization for UnionByRank
@@ -50,26 +50,7 @@ class DSU<true, false> : public DSU<false, false>
 {
 private:
     using base_type = DSU<false, false>;
-public:
-    DSU(size_t n) : base_type(n), m_ranks(n, 1) {}
 
-    size_t union_by_rank(size_t a, size_t b) noexcept
-    {
-        return union_impl(a, b, false);
-    }
-
-    size_t union_with_path_compression_by_rank(size_t a, size_t b) noexcept
-    {
-        return union_impl(a, b, true);
-    }
-
-    size_t rank(size_t x) const noexcept
-    {
-        return m_ranks[x];
-    }
-protected:
-    vector<size_t> m_ranks;
-private:
     size_t union_impl(size_t a, size_t b, bool use_path_compression) noexcept
     {
         size_t root_a =
@@ -91,6 +72,25 @@ private:
 
         return root_b;
     }
+public:
+    DSU(size_t n) : base_type(n), m_ranks(n, 1) {}
+
+    size_t union_by_rank(size_t a, size_t b) noexcept
+    {
+        return union_impl(a, b, false);
+    }
+
+    size_t union_with_path_compression_by_rank(size_t a, size_t b) noexcept
+    {
+        return union_impl(a, b, true);
+    }
+
+    size_t rank(size_t x) const noexcept
+    {
+        return m_ranks[x];
+    }
+protected:
+    vector<size_t> m_ranks;
 };
 
 // Specialization for RecordSize
@@ -99,6 +99,25 @@ class DSU<false, true> : public DSU<false, false>
 {
 private:
     using base_type = DSU<false, false>;
+
+    size_t union_impl(size_t a, size_t b, bool use_path_compression) noexcept
+    {
+        size_t root_a =
+            use_path_compression ? base_type::find_with_path_compression(a) : base_type::find(a);
+        size_t root_b =
+            use_path_compression ? base_type::find_with_path_compression(b) : base_type::find(b);
+        if (root_a == root_b) {
+            return root_b;
+        }
+
+        if (m_sizes[root_b] < m_sizes[root_a]) {
+            swap(root_a, root_b);
+        }
+
+        base_type::m_fathers[root_a] = root_b;
+        m_sizes[root_b] += m_sizes[root_a];
+        return root_b;
+    }
 public:
     DSU(size_t n) : base_type(n), m_sizes(n, 1) {}
 
@@ -118,25 +137,6 @@ public:
     }
 protected:
     vector<size_t> m_sizes;
-private:
-    size_t union_impl(size_t a, size_t b, bool use_path_compression) noexcept
-    {
-        size_t root_a =
-            use_path_compression ? base_type::find_with_path_compression(a) : base_type::find(a);
-        size_t root_b =
-            use_path_compression ? base_type::find_with_path_compression(b) : base_type::find(b);
-        if (root_a == root_b) {
-            return root_b;
-        }
-
-        if (m_sizes[root_b] < m_sizes[root_a]) {
-            swap(root_a, root_b);
-        }
-
-        base_type::m_fathers[root_a] = root_b;
-        m_sizes[root_b] += m_sizes[root_a];
-        return root_b;
-    }
 };
 
 // Specialization for both UnionByRank and RecordSize
@@ -145,31 +145,6 @@ class DSU<true, true> : public DSU<false, false>
 {
 private:
     using base_type = DSU<false, false>;
-public:
-    DSU(size_t n) : base_type(n), m_ranks(n, 1), m_sizes(n, 1) {}
-
-    size_t union_sets(size_t a, size_t b)
-    {
-        return union_impl(a, b, false);
-    }
-
-    size_t union_with_path_compression(size_t a, size_t b)
-    {
-        return union_impl(a, b, true);
-    }
-
-    size_t size(size_t x) const noexcept
-    {
-        return m_sizes[x];
-    }
-
-    size_t rank(size_t x) const noexcept
-    {
-        return m_ranks[x];
-    }
-private:
-    vector<size_t> m_ranks;
-    vector<size_t> m_sizes;
 
     size_t union_impl(size_t a, size_t b, bool use_path_compression)
     {
@@ -193,6 +168,31 @@ private:
         m_sizes[root_b] += m_sizes[root_a];
         return root_b;
     }
+public:
+    DSU(size_t n) : base_type(n), m_ranks(n, 1), m_sizes(n, 1) {}
+
+    size_t union_sets(size_t a, size_t b)
+    {
+        return union_impl(a, b, false);
+    }
+
+    size_t union_with_path_compression(size_t a, size_t b)
+    {
+        return union_impl(a, b, true);
+    }
+
+    size_t size(size_t x) const noexcept
+    {
+        return m_sizes[x];
+    }
+
+    size_t rank(size_t x) const noexcept
+    {
+        return m_ranks[x];
+    }
+protected:
+    vector<size_t> m_ranks;
+    vector<size_t> m_sizes;
 };
 
 int main()
