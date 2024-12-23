@@ -3,7 +3,7 @@
 
 # OI-ALGORITHM-TEMPLATE
 
-This is an algorithm template library for OI (Olympiad in Informatics) competitions, currently mainly for `C++` language, with the `C++` standard being `C++14`.
+This is an algorithm template library for OI (Olympiad in Informatics) competitions, currently mainly for `C++` language, with the `C++` standard being `C++17`.
 
 ## Usage
 
